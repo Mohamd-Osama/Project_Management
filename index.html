@@ -19,7 +19,7 @@
     }
   </script>
 </head>
-<body class="text-gray-800 h-screen flex overflow-hidden">
+<body class="text-gray-800 app-layout">
 
 <!-- Offline Banner -->
 <div id="offline-banner"><i class="fa-solid fa-wifi-slash ml-2"></i> أنت غير متصل — يتم عرض البيانات المحفوظة مؤقتاً</div>
@@ -27,9 +27,20 @@
 <!-- Toast Container -->
 <div id="toast-container"></div>
 
+<!-- Mobile Sidebar Overlay -->
+<div id="sidebar-overlay"></div>
+
 <!-- Sidebar -->
 <aside class="w-72 glass-sidebar text-white flex flex-col transition-all duration-300 z-20 shadow-2xl">
-  <div class="p-8 flex items-center gap-4 border-b border-gray-800">
+  <!-- Sidebar close button (visible on mobile inside sidebar) -->
+  <div class="p-4 flex items-center justify-between border-b border-gray-800 md:hidden">
+    <span class="text-white font-bold text-sm">القائمة</span>
+    <button id="btn-close-sidebar" class="w-9 h-9 rounded-lg bg-gray-800 text-gray-300 hover:text-white flex items-center justify-center transition-colors">
+      <i class="fa-solid fa-xmark text-lg"></i>
+    </button>
+  </div>
+
+  <div class="p-6 flex items-center gap-4 border-b border-gray-800 hidden md:flex">
     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-blue-600 flex items-center justify-center shadow-lg shadow-brand-500/30">
       <i class="fa-solid fa-gem text-xl text-white"></i>
     </div>
@@ -37,6 +48,14 @@
       <h1 class="text-2xl font-bold tracking-wide">إنجاز <span class="font-light text-brand-400">برو</span></h1>
       <p class="text-xs text-gray-400 mt-1">نظام الإدارة المؤسسي</p>
     </div>
+  </div>
+
+  <!-- Logo row shown on mobile (compact) -->
+  <div class="p-5 flex items-center gap-3 border-b border-gray-800 md:hidden">
+    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-blue-600 flex items-center justify-center">
+      <i class="fa-solid fa-gem text-sm text-white"></i>
+    </div>
+    <h1 class="text-xl font-bold tracking-wide text-white">إنجاز <span class="font-light text-brand-400">برو</span></h1>
   </div>
 
   <nav class="flex-1 p-5 space-y-3 mt-4">
@@ -63,33 +82,40 @@
 </aside>
 
 <!-- Main Content -->
-<main class="flex-1 flex flex-col h-full relative overflow-hidden bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+<main class="app-main bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
 
   <!-- Header -->
   <header class="glass-panel py-4 px-8 flex justify-between items-center z-10 sticky top-0">
-    <h2 id="page-title" class="text-3xl font-bold text-gray-800 text-gradient">لوحة القيادة والمؤشرات</h2>
-    <div class="flex items-center gap-4">
+    <div class="flex items-center gap-3">
+      <!-- Hamburger: mobile only -->
+      <button id="btn-hamburger" aria-label="فتح القائمة">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+      <h2 id="page-title" class="text-3xl font-bold text-gray-800 text-gradient">لوحة القيادة والمؤشرات</h2>
+    </div>
+    <div class="flex items-center gap-3">
       <!-- Sync Indicator -->
       <div id="sync-indicator" class="flex items-center gap-2" title="حالة المزامنة">
         <span id="sync-dot"></span>
-        <span id="sync-text" class="text-xs text-gray-500 hidden md:block">جاري التزامن...</span>
+        <span id="sync-text" class="text-xs text-gray-500 hidden lg:block">جاري التزامن...</span>
       </div>
-      <div class="text-left hidden md:block">
+      <div class="text-left hidden lg:block greeting-block">
         <p class="text-sm font-bold text-gray-800">مرحباً، أيها المدير</p>
         <p class="text-xs text-gray-500" id="current-date">--</p>
       </div>
-      <button id="btn-add-task" class="bg-gradient-to-r from-brand-600 to-blue-600 hover:from-brand-700 hover:to-blue-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-brand-500/30 transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
-        <i class="fa-solid fa-plus"></i> إضافة مهمة
+      <button id="btn-add-task" class="bg-gradient-to-r from-brand-600 to-blue-600 hover:from-brand-700 hover:to-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-brand-500/30 transition-all flex items-center gap-2 transform hover:-translate-y-0.5">
+        <i class="fa-solid fa-plus"></i>
+        <span class="btn-label">إضافة مهمة</span>
       </button>
     </div>
   </header>
 
   <!-- Scrollable Content -->
-  <div class="flex-1 overflow-y-auto p-8 pb-24">
+  <div class="flex-1 overflow-y-auto p-8 pb-24 content-scroll">
 
     <!-- DASHBOARD -->
     <div id="view-dashboard" class="space-y-8 animate-fade">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 kpi-grid">
         <div class="glass-panel p-6 rounded-2xl flex items-center justify-between border-b-4 border-blue-500 relative overflow-hidden">
           <div class="absolute -right-4 -top-4 opacity-5"><i class="fa-solid fa-layer-group text-8xl"></i></div>
           <div class="relative z-10"><p class="text-gray-500 text-sm font-bold mb-1">إجمالي المهام</p><h3 class="text-4xl font-extrabold text-gray-800" id="kpi-total">0</h3></div>
@@ -112,7 +138,7 @@
         </div>
       </div>
 
-      <div class="glass-panel p-8 rounded-2xl">
+      <div class="glass-panel p-8 rounded-2xl progress-section">
         <div class="flex justify-between items-end mb-4">
           <div>
             <h3 class="text-xl font-bold text-gray-800">معدل الإنجاز العام للمشاريع</h3>
@@ -127,21 +153,21 @@
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 charts-grid">
         <div class="glass-panel p-8 rounded-2xl">
           <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-column text-brand-500"></i> توزيع المهام حسب الأقسام</h3>
-          <div class="h-72 relative"><canvas id="deptChart"></canvas></div>
+          <div class="h-72 relative chart-container"><canvas id="deptChart"></canvas></div>
         </div>
         <div class="glass-panel p-8 rounded-2xl">
           <h3 class="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-brand-500"></i> الحالة العامة للمهام</h3>
-          <div class="h-72 relative flex justify-center"><canvas id="statusChart"></canvas></div>
+          <div class="h-72 relative flex justify-center chart-container"><canvas id="statusChart"></canvas></div>
         </div>
       </div>
     </div>
 
     <!-- TASKS TABLE -->
     <div id="view-tasks" class="hidden space-y-6 animate-fade">
-      <div class="glass-panel p-6 rounded-2xl flex flex-wrap gap-5 items-end shadow-sm">
+      <div class="glass-panel p-6 rounded-2xl flex flex-wrap gap-5 items-end shadow-sm filters-panel">
         <div class="flex-1 min-w-[250px]">
           <label class="block text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-magnifying-glass text-gray-400"></i> البحث المتقدم</label>
           <input type="text" id="filter-search" placeholder="ابحث بعنوان المهمة أو اسم المسؤول..." class="w-full px-5 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-brand-500 outline-none transition-all bg-white/50">
@@ -170,7 +196,7 @@
       </div>
 
       <div class="glass-panel rounded-2xl overflow-hidden shadow-lg border border-gray-100">
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto table-wrapper">
           <table class="w-full text-right whitespace-nowrap">
             <thead class="bg-gray-50/80 border-b border-gray-200">
               <tr>
@@ -197,8 +223,8 @@
     </div>
 
     <!-- KANBAN -->
-    <div id="view-kanban" class="hidden h-full animate-fade">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 h-full pb-10">
+    <div id="view-kanban" class="hidden animate-fade">
+      <div class="grid md:grid-cols-3 gap-6 pb-10 kanban-board">
         <div class="glass-panel rounded-2xl p-5 flex flex-col shadow-md">
           <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
             <h3 class="font-bold text-gray-700 flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-slate-500"></span> لم تبدأ بعد</h3>
