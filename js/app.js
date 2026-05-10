@@ -32,8 +32,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function _syncFromSheets() {
   if (!API.isConfigured()) {
     UI.setSyncStatus('error');
-    UI.showToast('⚠ لم يتم إعداد رابط Google Apps Script بعد. يتم عرض البيانات المؤقتة.', 'warning', 6000);
-    if (!State.getTasks().length) _loadDefaults();
+    UI.showToast('⚠ رابط Google Apps Script غير مُعدّ. افتح js/api.js وأدخل رابط النشر.', 'warning', 8000);
+    // Do NOT load defaults — show empty state
     _refreshAllViews();
     return;
   }
@@ -42,13 +42,17 @@ async function _syncFromSheets() {
   UI.setSyncStatus('syncing');
   try {
     const tasks = await API.fetchAllTasks();
+    // Always replace state with exactly what the sheet has (empty = empty)
     State.setTasks(tasks);
     _refreshAllViews();
     UI.setSyncStatus('synced');
-    UI.showToast('تمت المزامنة مع Google Sheets', 'success', 2500);
+    const msg = tasks.length === 0
+      ? 'الجدول فارغ — أضف مهمتك الأولى!'
+      : `تمت المزامنة (${tasks.length} مهمة)`;
+    UI.showToast(msg, 'success', 3000);
   } catch (err) {
     UI.setSyncStatus('error');
-    UI.showToast('تعذّر الاتصال بقاعدة البيانات: ' + err.message, 'error');
+    UI.showToast('خطأ في الاتصال: ' + err.message, 'error', 6000);
   }
 }
 
@@ -76,6 +80,10 @@ function _wireEvents() {
   document.getElementById('btn-dashboard').addEventListener('click', () => { UI.switchTab('dashboard'); UI.updateDashboard(); });
   document.getElementById('btn-tasks').addEventListener('click',     () => { UI.switchTab('tasks');     UI.renderTable(_getFiltered()); UI.renderPagination(_getFiltered().length); });
   document.getElementById('btn-kanban').addEventListener('click',    () => { UI.switchTab('kanban');    UI.renderKanban(); });
+
+  // Mobile hamburger menu
+  document.getElementById('btn-hamburger')?.addEventListener('click', UI.openSidebar);
+  document.getElementById('btn-close-sidebar')?.addEventListener('click', UI.closeSidebar);
 
   // Header "Add Task"
   document.getElementById('btn-add-task').addEventListener('click', () => UI.openModal());
@@ -211,21 +219,18 @@ async function _handleDrop(e, newStatus) {
   }
 }
 
+// ── Factory Reset ─────────────────────────────────────────────
 async function _handleReset() {
   UI.confirmDelete(async () => {
-    State.clearCache();
-    _refreshAllViews();
-    UI.showToast('تم مسح البيانات المحلية. ستتم إعادة المزامنة تلقائياً.', 'info');
+    // Wipe ALL local storage — no cached tasks survive
+    localStorage.clear();
+    sessionStorage.clear();
+    State.clearCache();          // also resets in-memory array
+    _refreshAllViews();          // show empty UI immediately
+    UI.showToast('تم مسح جميع البيانات المحلية. جارٍ جلب البيانات من Google Sheets...', 'info', 4000);
+    // Re-fetch fresh from the sheet (source of truth)
     await _syncFromSheets();
   });
 }
 
-// ── Default demo tasks (when API not configured) ───────────────
-function _loadDefaults() {
-  State.setTasks([
-    { id:'1', name:'إعداد خطة التسويق الربع سنوية', dept:'التسويق والمبيعات', assignee:'سارة محمد', startDate:'2026-05-01', deadline:'2026-05-20', priority:'High',   status:'In Progress', progress:65, notes:'التركيز على منصات التواصل الاجتماعي.' },
-    { id:'2', name:'تطوير واجهة المستخدم للتطبيق',  dept:'البرمجة والتطوير',   assignee:'أحمد علي',   startDate:'2026-05-05', deadline:'2026-05-15', priority:'High',   status:'Done',        progress:100,notes:'تم الانتهاء من النسخة الأولية.' },
-    { id:'3', name:'مراجعة عقود الموردين الجدد',    dept:'الإدارة العليا',      assignee:'محمود حسن',  startDate:'2026-05-10', deadline:'2026-05-08', priority:'Medium', status:'Not Started', progress:0,  notes:'مهمة متأخرة، يرجى المتابعة.' },
-    { id:'4', name:'تجهيز كشوف رواتب الموظفين',    dept:'الموارد البشرية',      assignee:'منى خالد',   startDate:'2026-05-25', deadline:'2026-05-28', priority:'High',   status:'Not Started', progress:0,  notes:'' }
-  ]);
-}
+// (No hardcoded defaults — source of truth is Google Sheets only)
