@@ -3,13 +3,13 @@
 // ⚠️  Replace APPS_SCRIPT_URL with your deployed Web App URL
 // ============================================================
 
-export const APPS_SCRIPT_URL = 'https://script.google.com/macros/library/d/10xxPLy3Ua_fx9UBPDDGYr0JHcXl5OrCJvF6-AMqtwgpyrvF7QMvnq2mR/2';
+export const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQQAQHFULqj2vVSthSn0sERd4mQK7Mr3vJf8XHUoM/dev';
 
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 800;
 
 export function isConfigured() {
-  return APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'https://script.google.com/macros/library/d/10xxPLy3Ua_fx9UBPDDGYr0JHcXl5OrCJvF6-AMqtwgpyrvF7QMvnq2mR/2';
+  return APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbzQQAQHFULqj2vVSthSn0sERd4mQK7Mr3vJf8XHUoM/dev';
 }
 
 // Internal: fetch with exponential back-off retry
