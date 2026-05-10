@@ -3,22 +3,29 @@
 // ⚠️  Replace APPS_SCRIPT_URL with your deployed Web App URL
 // ============================================================
 
-export const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvlg0JoFZudzSYLicnrZHKfh3jVGNEYNZjQ9Pf2oSfnb5Nu5dkWCV5Felcktdn6PD_/exec';
+export const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxb7bSRJoA1fzyLXaxV981ogI6ixIsVI2RZ4FhmJsRxeTHSnU38CBUH-p_5lgyvOcI/exec';
 
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 800;
 
+// Returns true if the URL has been set to a real Apps Script deployment URL
 export function isConfigured() {
-  return APPS_SCRIPT_URL && APPS_SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbyvlg0JoFZudzSYLicnrZHKfh3jVGNEYNZjQ9Pf2oSfnb5Nu5dkWCV5Felcktdn6PD_/exec';
+  return !!APPS_SCRIPT_URL &&
+    !APPS_SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbzxb7bSRJoA1fzyLXaxV981ogI6ixIsVI2RZ4FhmJsRxeTHSnU38CBUH-p_5lgyvOcI/exec') &&
+    APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/');
 }
 
 // Internal: fetch with exponential back-off retry
 async function fetchWithRetry(url, options = {}, attempt = 1) {
   try {
-    const res = await fetch(url, { redirect: 'follow', ...options });
+    const res = await fetch(url, { redirect: 'follow', mode: 'cors', ...options });
+    // Apps Script may return non-200 on redirect — still try to parse body
     const text = await res.text();
-    const json = JSON.parse(text);
-    if (!json.success) throw new Error(json.error || 'API Error');
+    if (!text) throw new Error('Empty response from server');
+    let json;
+    try { json = JSON.parse(text); }
+    catch (_) { throw new Error('Invalid JSON from server: ' + text.slice(0, 120)); }
+    if (!json.success) throw new Error(json.error || 'API returned failure');
     return json.data;
   } catch (err) {
     if (attempt >= RETRY_ATTEMPTS) throw err;
