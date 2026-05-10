@@ -9,6 +9,16 @@ let _statusChart = null;
 // Kanban card registry: taskId → card DOM element
 const _cardMap   = new Map();
 
+// ── Mobile Sidebar ────────────────────────────────────────────
+export function openSidebar() {
+  document.body.classList.add('sidebar-open');
+  document.getElementById('sidebar-overlay').addEventListener('click', closeSidebar, { once: true });
+}
+
+export function closeSidebar() {
+  document.body.classList.remove('sidebar-open');
+}
+
 // ── Tab Switching ─────────────────────────────────────────────
 export function switchTab(tab) {
   ['dashboard','tasks','kanban'].forEach(v => {
@@ -21,6 +31,8 @@ export function switchTab(tab) {
   document.getElementById('btn-'+tab).className = activeClass;
   const titles = { dashboard:'لوحة القيادة والمؤشرات', tasks:'قائمة المهام التفصيلية', kanban:'لوحة الإنجاز (Kanban)' };
   document.getElementById('page-title').innerText = titles[tab];
+  // Auto-close sidebar on mobile after navigation
+  closeSidebar();
 }
 
 // ── Dashboard ─────────────────────────────────────────────────
