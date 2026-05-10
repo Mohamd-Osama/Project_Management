@@ -8,11 +8,14 @@ export const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzxb7bSR
 const RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 800;
 
-// Returns true if the URL has been set to a real Apps Script deployment URL
+// Returns true if the URL is a valid deployed Apps Script Web App URL.
+// ⚠️  IMPORTANT: Never put the real URL inside this function — doing so breaks it.
+// This only checks the URL format, nothing else.
 export function isConfigured() {
   return !!APPS_SCRIPT_URL &&
-    !APPS_SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbzxb7bSRJoA1fzyLXaxV981ogI6ixIsVI2RZ4FhmJsRxeTHSnU38CBUH-p_5lgyvOcI/exec') &&
-    APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/');
+    !APPS_SCRIPT_URL.includes('YOUR_APPS_SCRIPT_URL_HERE') &&
+    APPS_SCRIPT_URL.startsWith('https://script.google.com/macros/s/') &&
+    APPS_SCRIPT_URL.endsWith('/exec');
 }
 
 // Internal: fetch with exponential back-off retry
